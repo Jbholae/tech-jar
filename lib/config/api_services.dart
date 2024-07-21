@@ -5,6 +5,7 @@ import 'package:tech_jar/model/post_comment.dart';
 class ApiServices {
   final dio = Dio();
   String baseUrl = "https://jsonplaceholder.typicode.com";
+
   Future<List<PostModel>> getPosts() async {
     List<PostModel> postData = <PostModel>[];
     Response response = await dio.get('$baseUrl/posts');
@@ -50,5 +51,21 @@ class ApiServices {
       Exception(e);
     }
     return postDetailCommentData;
+  }
+
+  Future postComment(int postId, String comment) async {
+    Response response =
+        await dio.post('$baseUrl/posts/$postId/comments', data: {
+      'body': comment,
+      'userId': 1,
+    });
+    try {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } catch (e) {
+      Exception(e);
+      return false;
+    }
   }
 }
