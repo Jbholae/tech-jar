@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tech_jar/config/api_services.dart';
+import 'package:provider/provider.dart';
 import 'package:tech_jar/config/route_arguments.dart';
-import 'package:tech_jar/model/post.dart';
-import 'package:tech_jar/model/post_comment.dart';
+import 'package:tech_jar/provider/get_post_comments.dart';
+import 'package:tech_jar/provider/get_post_details.dart';
+import 'package:tech_jar/widgets/empty_widget.dart';
+import 'package:tech_jar/widgets/loading_widget.dart';
 
 class PostDetailScreen extends StatefulWidget {
   const PostDetailScreen({
@@ -18,7 +20,19 @@ class PostDetailScreen extends StatefulWidget {
 class _PostDetailScreenState extends State<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
+    Provider.of<GetPostDetailsProvider>(context, listen: false)
+        .getPostDetailsData(widget.arguments.postId);
+    Provider.of<GetPostCommentsProvider>(context, listen: false)
+        .getPostCommentData(widget.arguments.postId);
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Colors.blueGrey[300],
+        child: const Icon(
+          Icons.add_card,
+          size: 30,
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -27,29 +41,22 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             children: [
               Expanded(
                 flex: 1,
-                child: FutureBuilder<PostModel>(
-                    future:
-                        ApiServices().getPostDetails(widget.arguments.postId),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        if (snapshot.hasError) {
-                          return Center(
-                            child: Text('${snapshot.error}'),
-                          );
-                        } else if (snapshot.hasData) {
-                          var postData = snapshot.data;
-                          return Column(
+                child: Consumer<GetPostDetailsProvider>(
+                  builder: (context, postDetails, child) {
+                    return postDetails.loading
+                        ? const LoadingWidget()
+                        : Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                postData!.title!,
+                                postDetails.postDetailsResponse.title!,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
                                 ),
                               ),
                               Text(
-                                postData.body!,
+                                postDetails.postDetailsResponse.body!,
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w300,
                                   fontSize: 13,
@@ -57,63 +64,54 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                               ),
                             ],
                           );
-                        }
-                      }
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }),
+                  },
+                ),
               ),
               const Divider(),
               Expanded(
                 flex: 4,
                 child: SingleChildScrollView(
-                  child: FutureBuilder<List<PostCommentModel>>(
-                      future: ApiServices()
-                          .getPostDetailComment(widget.arguments.postId),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.done) {
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text('${snapshot.error}'),
-                            );
-                          } else if (snapshot.hasData) {
-                            return ListView.builder(
+                  child: Consumer<GetPostCommentsProvider>(
+                    builder: (context, commentData, child) {
+                      return commentData.loading
+                          ? const LoadingWidget()
+                          : ListView.builder(
                               physics: const NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: snapshot.data?.length,
+                              itemCount: commentData.postCommentResponse.length,
                               itemBuilder: (context, index) {
-                                var postData = snapshot.data?[index];
-                                return Container(
-                                  margin: EdgeInsets.only(bottom: 5.0),
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey[300],
-                                      borderRadius: BorderRadius.circular(20)),
-                                  child: ListTile(
-                                    title: Text(
-                                      postData!.name!,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      postData.body!,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                                );
+                                var postData =
+                                    commentData.postCommentResponse[index];
+                                return commentData.postCommentResponse.isEmpty
+                                    ? const EmptyWidget()
+                                    : Container(
+                                        margin:
+                                            const EdgeInsets.only(bottom: 5.0),
+                                        decoration: BoxDecoration(
+                                            color: Colors.grey[300],
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        child: ListTile(
+                                          title: Text(
+                                            postData.name!,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                          subtitle: Text(
+                                            postData.body!,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w300,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                      );
                               },
                             );
-                          }
-                        }
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }),
+                    },
+                  ),
                 ),
               ),
             ],
