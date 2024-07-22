@@ -14,22 +14,29 @@ class PostWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        onTap();
-      },
-      child: ListTile(
-        leading: Text(gotData.id.toString()),
-        title: Text(
-          gotData.title!,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8.0),
+      decoration: BoxDecoration(
+        color: Colors.blueGrey[100],
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          onTap();
+        },
+        child: ListTile(
+          leading: Text(gotData.id.toString()),
+          title: Text(
+            gotData.title!,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        subtitle: Text(
-          gotData.body!,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+          subtitle: Text(
+            gotData.body!,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ),
     );
