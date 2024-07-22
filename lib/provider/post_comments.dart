@@ -4,25 +4,20 @@ import 'package:tech_jar/config/api_services.dart';
 class PostCommentsProvider with ChangeNotifier {
   bool loading = false;
 
-  postComment(int postId, String comment) async {
-    loading = true;
-    await ApiServices().postComment(postId, comment);
-    loading = false;
-    notifyListeners();
-  }
-
-  /* Future<bool> postComment(int postId, String comment) async {
+  Future<void> postComment(
+    int postId,
+    String comment,
+    Function onSuccess,
+  ) async {
     loading = true;
     try {
       await ApiServices().postComment(postId, comment);
       loading = false;
-      notifyListeners();
-      return true; // Indicate success
-    } catch (error) {
+      onSuccess(); // Call the callback function upon success
+    } catch (e) {
       loading = false;
-      notifyListeners();
-      return false; // Indicate failure
     }
-  } */
-
+    loading = false;
+    notifyListeners();
+  }
 }
